@@ -12,7 +12,7 @@ import java.util.Scanner;
 public class Icefox {
 	public static void main(String[] args) throws IOException {
 		String[] codigo = new String[525];
-		Arrays.fill(codigo,"");
+		Arrays.fill(codigo, "");
 		// CODIGOS 1XX - Informacion
 		codigo[100] = "Continue";
 		codigo[101] = "Switching Protocols";
@@ -95,14 +95,14 @@ public class Icefox {
 		System.out.print("Introduzca una URL: ");
 		String dir = sc.nextLine();
 		int status;
-		
-		if ( dir.equals("salir") ){}
-		else if (dir.equals("icefox") ) { // Modo debugging codigos HTTP
+
+		if (dir.equals("salir")) {
+		} else if (dir.equals("icefox")) { // Modo debugging codigos HTTP
 			for (int i = 200; i < codigo.length; i++) {
-				if(!codigo[i].equals("")){
-					try{
-						dir="https://httpstat.us/" + i;
-						System.out.println("Probando "+dir);
+				if (!codigo[i].equals("")) {
+					try {
+						dir = "https://httpstat.us/" + i;
+						System.out.println("Probando " + dir);
 						URL url = new URL(dir);
 						HttpURLConnection con = (HttpURLConnection) url.openConnection();
 						con.setRequestMethod("GET");
@@ -111,12 +111,14 @@ public class Icefox {
 						BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 						String inputLine;
 						StringBuffer contenido = new StringBuffer();
-						while ((inputLine = in.readLine()) != null) {contenido.append(inputLine);}
+						while ((inputLine = in.readLine()) != null) {
+							contenido.append(inputLine);
+						}
 						in.close();
 						con.disconnect();
 						System.out.println(contenido);
-					}catch( Exception e ){
-						System.out.println("Error: "+e);
+					} catch (Exception e) {
+						System.out.println("Error: " + e);
 					}
 				}
 			}
@@ -128,32 +130,31 @@ public class Icefox {
 				status = con.getResponseCode();
 				System.out.println("El servidor a devuelto el codigo " + status + ": " + codigo[status]);
 
-				if (status == 200) {
+				if (status == 200) { // Si el servidor da el OK
 					System.out.println("Descargando archivo html");
 
+					// Empieza a descargar el html
 					BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 					String inputLine;
 					StringBuffer contenido = new StringBuffer();
 					while ((inputLine = in.readLine()) != null) {
 						contenido.append(inputLine);
 					}
-					in.close();
-
-					con.disconnect();
+					in.close(); // Cierra el buffer
+					con.disconnect(); // Cierra la conexión
 
 					System.out.print("¿Cuanto quiere ver del html(0=todo)? ");
 					int t = Integer.parseInt(sc.nextLine());
-					sc.close();
-
 					if (t <= 0) {
 						System.out.println(contenido);
 					} else {
 						System.out.println(contenido.substring(0, t));
 					}
 				}
-			} catch (MalformedURLException e) {
+			} catch (MalformedURLException e) { // Captura URLs mal escritas
 				System.out.println("Revisa la URL");
 			}
 		}
+		sc.close();
 	}
 }
