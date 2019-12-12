@@ -92,68 +92,78 @@ public class Icefox {
 		System.out.println("Bienvenido a Icefox 1.0");
 
 		Scanner sc = new Scanner(System.in);
-		System.out.print("Introduzca una URL: ");
+		System.out.print("Introduzca una URL (o salir): ");
 		String dir = sc.nextLine();
 		int status;
 
-		if (dir.equals("salir")) {
-		} else if (dir.equals("icefox")) { // Modo debugging codigos HTTP
-			for (int i = 200; i < codigo.length; i++) {
-				if (!codigo[i].equals("")) {
-					try {
-						dir = "https://httpstat.us/" + i;
-						System.out.println("Probando " + dir);
-						URL url = new URL(dir);
-						HttpURLConnection con = (HttpURLConnection) url.openConnection();
-						con.setRequestMethod("GET");
-						status = con.getResponseCode();
-						System.out.println("El servidor a devuelto el codigo " + status + ": " + codigo[status]);
+		while (!dir.equals("salir")) {
+			if (dir.equals("icefox")) { // Modo debugging codigos HTTP
+				for (int i = 200; i < codigo.length; i++) {
+					if (!codigo[i].equals("")) {
+						try {
+							dir = "https://httpstat.us/" + i;
+							System.out.println("Probando " + dir);
+							URL url = new URL(dir);
+							HttpURLConnection con = (HttpURLConnection) url.openConnection();
+							con.setRequestMethod("GET");
+							status = con.getResponseCode();
+							System.out.println("El servidor a devuelto el codigo " + status + ": " + codigo[status]);
+							BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+							String inputLine;
+							StringBuffer contenido = new StringBuffer();
+							while ((inputLine = in.readLine()) != null) {
+								contenido.append(inputLine);
+							}
+							in.close();
+							con.disconnect();
+							System.out.println(contenido);
+						} catch (Exception e) {
+							System.out.println("Error: " + e);
+						}
+					}
+				}
+			} else { // Si se introduce una URL
+				try {
+					URL url = new URL(dir);
+					HttpURLConnection con = (HttpURLConnection) url.openConnection();
+					con.setRequestMethod("GET"); // Le hace un HTTP GET
+					status = con.getResponseCode();
+					System.out.println("El servidor a devuelto el codigo " + status + ": " + codigo[status]);
+
+					if (status == 200) { // Si el servidor da el OK
+						System.out.println("Descargando archivo html");
+
+						// Empieza a descargar el html
 						BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 						String inputLine;
 						StringBuffer contenido = new StringBuffer();
 						while ((inputLine = in.readLine()) != null) {
 							contenido.append(inputLine);
 						}
-						in.close();
-						con.disconnect();
-						System.out.println(contenido);
-					} catch (Exception e) {
-						System.out.println("Error: " + e);
+						in.close(); // Cierra el buffer
+						con.disconnect(); // Cierra la conexión
+						
+						String res = contenido.toString().replace("><", ">\n<"); // Saltos de linea
+
+						System.out.print("¿Cuanto quiere ver del html(0=todo)? ");
+						try{
+							int t = Integer.parseInt(sc.nextLine());
+							if (t <= 0) {
+								System.out.println(res);
+							} else {
+								System.out.println(res.substring(0, t));
+							}
+						} catch( NumberFormatException e ){
+							System.out.println("Eso no es un numero");
+						}
+						
 					}
+				} catch (MalformedURLException e) { // Captura URLs mal escritas
+					System.out.println("Revisa la URL");
 				}
 			}
-		} else { // Si se introduce una URL
-			try {
-				URL url = new URL(dir);
-				HttpURLConnection con = (HttpURLConnection) url.openConnection();
-				con.setRequestMethod("GET"); // Le hace un HTTP GET
-				status = con.getResponseCode();
-				System.out.println("El servidor a devuelto el codigo " + status + ": " + codigo[status]);
-
-				if (status == 200) { // Si el servidor da el OK
-					System.out.println("Descargando archivo html");
-
-					// Empieza a descargar el html
-					BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-					String inputLine;
-					StringBuffer contenido = new StringBuffer();
-					while ((inputLine = in.readLine()) != null) {
-						contenido.append(inputLine);
-					}
-					in.close(); // Cierra el buffer
-					con.disconnect(); // Cierra la conexión
-
-					System.out.print("¿Cuanto quiere ver del html(0=todo)? ");
-					int t = Integer.parseInt(sc.nextLine());
-					if (t <= 0) {
-						System.out.println(contenido);
-					} else {
-						System.out.println(contenido.substring(0, t));
-					}
-				}
-			} catch (MalformedURLException e) { // Captura URLs mal escritas
-				System.out.println("Revisa la URL");
-			}
+			System.out.print("Introduzca una URL (o salir): ");
+			dir = sc.nextLine();
 		}
 		sc.close();
 	}
